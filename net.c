@@ -24,6 +24,7 @@
 #include "main.h"
 #include "man.h"
 #include "host.h"
+#include "switch.h"
 #include "net.h"
 #include "packet.h"
 
@@ -282,6 +283,7 @@ create_port_list();
  * as a linked list
  */
 create_man_ports(&g_man_man_port_list, &g_man_host_port_list);
+return 0;
 }
 
 /*

@@ -10,6 +10,7 @@
 #include "main.h"
 #include "net.h"
 #include "man.h"
+#include "switch.h"
 #include "host.h"
 
 
