@@ -464,13 +464,21 @@ else {
 			fscanf(fp, " %d ", &node_id);
 			g_net_node[i].type = HOST;
 			g_net_node[i].id = node_id;
+			printf("\tnet.c: Added host %d\n",node_id);
+		}
+		else if (node_type == 'S') {
+
+			fscanf(fp, " %d ", &node_id);
+			g_net_node[i].type = SWITCH;
+			g_net_node[i].id = node_id;
+			printf("\tnet.c: Added switch %d\n",node_id);
 		}
 		else {
-			printf(" net.c: Unidentified Node Type\n");
+			printf("\tnet.c: Unidentified Node Type\n");
 		}
 
 		if (i != node_id) {
-			printf(" net.c: Incorrect node id\n");
+			printf("\tnet.c: Incorrect node id\n");
 			fclose(fp);
 			return(0);
 		}
@@ -509,7 +517,7 @@ else {
 			g_net_link[i].pipe_node1 = node1;
 		}
 		else {
-			printf("   net.c: Unidentified link type\n");
+			printf("\tnet.c: Unidentified link type\n");
 		}
 
 	}
@@ -519,24 +527,24 @@ else {
 printf("Nodes:\n");
 for (i=0; i<g_net_node_num; i++) {
 	if (g_net_node[i].type == HOST) {
-	        printf("   Node %d HOST\n", g_net_node[i].id);
+	        printf("\tNode %d HOST\n", g_net_node[i].id);
 	}
 	else if (g_net_node[i].type == SWITCH) {
-		printf(" SWITCH\n");
+	        printf("\tNode %d SWITCH\n", g_net_node[i].id);
 	}
 	else {
-		printf(" Unknown Type\n");
+		printf("\tUnknown Type\n");
 	}
 }
 printf("Links:\n");
 for (i=0; i<g_net_link_num; i++) {
 	if (g_net_link[i].type == PIPE) {
-		printf("   Link (%d, %d) PIPE\n",
+		printf("\tLink (%d, %d) PIPE\n",
 				g_net_link[i].pipe_node0,
 				g_net_link[i].pipe_node1);
 	}
 	else if (g_net_link[i].type == SOCKET) {
-		printf("   Socket: to be constructed (net.c)\n");
+		printf("\tSocket: to be constructed (net.c)\n");
 	}
 }
 

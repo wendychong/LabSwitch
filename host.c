@@ -187,10 +187,21 @@ struct host_job *job_q_remove(struct job_queue *j_q)
 {
 struct host_job *j;
 
-if (j_q->occ == 0) return(NULL);
+printf("\t\tq%p: REMOVING\n", j_q);
+
+if (j_q->occ == 0)
+{
+	printf("\t\tq%p: REMOVING\n", j_q);
+	return(NULL);
+}
+
+printf("\t\tq%p: DECR A\n", j_q);
 j = j_q->head;
 j_q->head = (j_q->head)->next;
 j_q->occ--;
+
+printf("\t\tq%p: DECR B\n", j_q);
+
 return(j);
 }
 
@@ -282,6 +293,8 @@ for (k = 0; k < node_port_num; k++) {
 
 /* Initialize the job queue */
 job_q_init(&job_q);
+
+printf("\th%d: online\n", host_id);
 
 while(1) {
 	/* Execute command from manager, if any */
@@ -423,15 +436,19 @@ while(1) {
 
 	if (job_q_num(&job_q) > 0) {
 
+		printf("\th%d: jobs available\n", host_id);
+
 		/* Get a new job from the job queue */
 		new_job = job_q_remove(&job_q);
 
+		printf("\th%d: got a job\n", host_id);
 
 		/* Send packet on all ports */
 		switch(new_job->type) {
 
 		/* Send packets on all ports */
 		case JOB_SEND_PKT_ALL_PORTS:
+			printf("\th%d: doing job \"%s\"\n", host_id, "send blast");
 			for (k=0; k<node_port_num; k++) {
 				packet_send(node_port[k], new_job->packet);
 			}
@@ -441,6 +458,7 @@ while(1) {
 
 		/* The next three jobs deal with the pinging process */
 		case JOB_PING_SEND_REPLY:
+			printf("\th%d: doing job \"%s\"\n", host_id, "ping reply");
 			/* Send a ping reply packet */
 
 			/* Create ping reply packet */
@@ -466,6 +484,7 @@ while(1) {
 			break;
 
 		case JOB_PING_WAIT_FOR_REPLY:
+			printf("\th%d: doing job \"%s\"\n", host_id, "ping wait");
 			/* Wait for a ping reply packet */
 
 			if (ping_reply_received == 1) {
@@ -492,6 +511,7 @@ while(1) {
 
 			/* This job is for the sending host */
 		case JOB_FILE_UPLOAD_SEND:
+			printf("\th%d: doing job \"%s\"\n", host_id, "upload send");
 
 			/* Open file */
 			if (dir_valid == 1) {
@@ -577,6 +597,7 @@ while(1) {
 			/* The next two jobs are for the receving host */
 
 		case JOB_FILE_UPLOAD_RECV_START:
+			printf("\th%d: doing job \"%s\"\n", host_id, "upload get start");
 
 			/* Initialize the file buffer data structure */
 			file_buf_init(&f_buf_upload);
@@ -594,6 +615,7 @@ while(1) {
 			break;
 
 		case JOB_FILE_UPLOAD_RECV_END:
+			printf("\th%d: doing job \"%s\"\n", host_id, "upload get end");
 
 			/*
 			 * Download packet payload into file buffer
@@ -641,11 +663,13 @@ while(1) {
 
 			break;
 		default:
+
+			printf("\th%d: doing job \"%s\"\n", host_id, "unknown");
 			break;
 		}
 
+		printf("\th%d: switch out \n", host_id);
 	}
-
 
 	/* The host goes to sleep for 10 ms */
 	usleep(TENMILLISEC);
