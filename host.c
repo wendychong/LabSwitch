@@ -169,6 +169,7 @@ write(port->send_fd, reply_msg, n);
 /* Add a job to the job queue */
 void job_q_add(struct job_queue *j_q, struct host_job *j)
 {
+printf("\t\tadd: j=%p\n", j);
 if (j_q->head == NULL ) {
 	j_q->head = j;
 	j_q->tail = j;
@@ -180,6 +181,8 @@ else {
 	j_q->tail = j;
 	j_q->occ++;
 }
+
+//printf("\t\tadd: end\n");
 }
 
 /* Remove job from the job queue, and return pointer to the job*/
@@ -187,20 +190,18 @@ struct host_job *job_q_remove(struct job_queue *j_q)
 {
 struct host_job *j;
 
-printf("\t\tq%p: REMOVING\n", j_q);
-
 if (j_q->occ == 0)
 {
-	printf("\t\tq%p: REMOVING\n", j_q);
+	printf("\t\trem: NULL\n");
 	return(NULL);
 }
-
-printf("\t\tq%p: DECR A\n", j_q);
 j = j_q->head;
+printf("\t\trem: j=%p\n", j);
 j_q->head = (j_q->head)->next;
+printf("\t\trem: j=%p *\n", j_q->head);
 j_q->occ--;
 
-printf("\t\tq%p: DECR B\n", j_q);
+printf("\t\trem: END\n");
 
 return(j);
 }
