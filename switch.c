@@ -97,7 +97,7 @@ job_q_init(&job_q);
 
 int flag;
 
-printf("\ts%d: online\n", switch_id);
+// printf("\ts%d: online\n", switch_id);
 
 while(1) {
 
@@ -119,8 +119,8 @@ while(1) {
 			new_job->in_port_index = k;
 			new_job->packet = in_packet;
 
-			printf("\ts%d: get on p%d: h%d ~ h%d\n",
-				switch_id, k, new_job->packet->src, new_job->packet->dst);
+			/*printf("\ts%d: get on p%d: h%d ~ h%d\n",
+				switch_id, k, new_job->packet->src, new_job->packet->dst);*/
 
 			job_q_add(&job_q, new_job);
 
@@ -131,8 +131,8 @@ while(1) {
 		}
 	}
 
-	if (flag)
-		printf("\ts%d: flag tripped\n",switch_id);
+	/*if (flag)
+		printf("\ts%d: flag tripped\n",switch_id);*/
 
 	/*
  	 * Execute one job in the job queue
@@ -142,12 +142,12 @@ while(1) {
 
 	if (job_q_num(&job_q) > 0) {
 
-		printf("\ts%d: jobs available\n", switch_id);
+		// printf("\ts%d: jobs available\n", switch_id);
 		/* Get a new job from the job queue */
 		new_job = job_q_remove(&job_q);
 
-		printf("\ts%d: routing h%d ~ h%d\n",
-				switch_id, new_job->packet->src, new_job->packet->dst);
+		/*printf("\ts%d: routing h%d ~ h%d\n",
+				switch_id, new_job->packet->src, new_job->packet->dst);*/
 
 		int vport = -1;
 		for (i=0; i<MAX_FWD_LENGTH; i++)
@@ -156,8 +156,8 @@ while(1) {
 			if (fwd_table[i].valid && fwd_table[i].dst == new_job->packet->src)
 			{
 				vport = fwd_table[i].port;
-				printf("\ts%d: found h%d on p%d\n",
-					switch_id, fwd_table[i].dst, fwd_table[i].port);
+				/*printf("\ts%d: found h%d on p%d\n",
+					switch_id, fwd_table[i].dst, fwd_table[i].port);*/
 				break;
 			}
 		}
@@ -171,8 +171,8 @@ while(1) {
 					fwd_table[i].dst = new_job->packet->src;
 					fwd_table[i].port = new_job->in_port_index;
 					vport = fwd_table[i].port;
-					printf("\ts%d: added h%d on p%d\n",
-						switch_id, fwd_table[i].dst, fwd_table[i].port);
+					/*printf("\ts%d: added h%d on p%d\n",
+						switch_id, fwd_table[i].dst, fwd_table[i].port);*/
 					break;
 				}
 			}
@@ -194,7 +194,7 @@ while(1) {
 		if (vport > -1)
 		{
 			packet_send(node_port[vport], new_job->packet);
-			printf("\ts%d: sent p%d\n", switch_id, vport);
+			//printf("\ts%d: sent p%d\n", switch_id, vport);
 		}
 		else
 		{
@@ -202,7 +202,7 @@ while(1) {
 			{
 				if (k != new_job->in_port_index) {
 					packet_send(node_port[k], new_job->packet);
-					printf("\ts%d: sent p%d\n", switch_id, k);
+					//printf("\ts%d: sent p%d\n", switch_id, k);
 				}
 			}
 		}
@@ -211,8 +211,8 @@ while(1) {
 		free(new_job);
 	}
 
-	if (flag)
-		printf("\ts%d: flag tripped\n",switch_id);
+	/*if (flag)
+		printf("\ts%d: flag tripped\n",switch_id);*/
 
 	/* The switch goes to sleep for 10 ms */
 	usleep(TENMILLISEC);
