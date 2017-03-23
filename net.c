@@ -24,6 +24,7 @@
 #include "main.h"
 #include "man.h"
 #include "host.h"
+#include "switch.h"
 #include "net.h"
 #include "packet.h"
 
@@ -34,8 +35,8 @@
 
 enum bool {FALSE, TRUE};
 
-/* 
- * Struct used to store a link. It is used when the 
+/*
+ * Struct used to store a link. It is used when the
  * network configuration file is loaded.
  */
 
@@ -46,13 +47,13 @@ struct net_link {
 };
 
 
-/* 
+/*
  * The following are private global variables to this file net.c
  */
-static enum bool g_initialized = FALSE; /* Network initialized? */  
+static enum bool g_initialized = FALSE; /* Network initialized? */
 	/* The network is initialized only once */
 
-/* 
+/*
  * g_net_node[] and g_net_node_num have link information from
  * the network configuration file.
  * g_node_list is a linked list version of g_net_node[]
@@ -61,14 +62,14 @@ static struct net_node *g_net_node;
 static int g_net_node_num;
 static struct net_node *g_node_list = NULL;
 
-/* 
+/*
  * g_net_link[] and g_net_link_num have link information from
  * the network configuration file
  */
 static struct net_link *g_net_link;
 static int g_net_link_num;
 
-/* 
+/*
  * Global private variables about ports of network node links
  * and ports of links to the manager
  */
@@ -77,7 +78,7 @@ static struct net_port *g_port_list = NULL;
 static struct man_port_at_man *g_man_man_port_list = NULL;
 static struct man_port_at_host *g_man_host_port_list = NULL;
 
-/* 
+/*
  * Loads network configuration file and creates data structures
  * for nodes and links.  The results are accessible through
  * the private global variables
@@ -102,7 +103,7 @@ void create_port_list();
  * at the host side is p_h.
  */
 void create_man_ports(
-		struct man_port_at_man **p_m, 
+		struct man_port_at_man **p_m,
 		struct man_port_at_host **p_h);
 
 void net_close_man_ports_at_hosts();
@@ -140,7 +141,7 @@ p = &g_port_list;
 
 while (*p != NULL) {
 	if ((*p)->pipe_host_id == host_id) {
-		t = *p;	
+		t = *p;
 		*p = (*p)->next;
 		t->next = r;
 		r = t;
@@ -162,7 +163,7 @@ return g_node_list;
 /* Return linked list of ports used by the manager to connect to hosts */
 struct man_port_at_man *net_get_man_ports_at_man_list()
 {
-return(g_man_man_port_list); 
+return(g_man_man_port_list);
 }
 
 /* Return the port used by host to link with other nodes */
@@ -259,22 +260,22 @@ int net_init()
 if (g_initialized == TRUE) { /* Check if the network is already initialized */
 	printf("Network already loaded\n");
 	return(0);
-}		
+}
 else if (load_net_data_file()==0) { /* Load network configuration file */
 	return(0);
 }
-/* 
- * Create a linked list of node information at g_node_list 
+/*
+ * Create a linked list of node information at g_node_list
  */
 create_node_list();
 
-/* 
+/*
  * Create pipes and sockets to realize network links
  * and store the ports of the links at g_port_list
  */
 create_port_list();
 
-/* 
+/*
  * Create pipes to connect the manager to hosts
  * and store the ports at the host at g_man_host_port_list
  * as a linked list
@@ -282,6 +283,7 @@ create_port_list();
  * as a linked list
  */
 create_man_ports(&g_man_man_port_list, &g_man_host_port_list);
+return 0;
 }
 
 /*
@@ -292,7 +294,7 @@ create_man_ports(&g_man_man_port_list, &g_man_host_port_list);
  *  Note that the pipes are nonblocking.
  */
 void create_man_ports(
-		struct man_port_at_man **p_man, 
+		struct man_port_at_man **p_man,
 		struct man_port_at_host **p_host)
 {
 struct net_node *p;
@@ -305,28 +307,28 @@ int host;
 
 for (p=g_node_list; p!=NULL; p=p->next) {
 	if (p->type == HOST) {
-		p_m = (struct man_port_at_man *) 
+		p_m = (struct man_port_at_man *)
 			malloc(sizeof(struct man_port_at_man));
 		p_m->host_id = p->id;
 
-		p_h = (struct man_port_at_host *) 
+		p_h = (struct man_port_at_host *)
 			malloc(sizeof(struct man_port_at_host));
 		p_h->host_id = p->id;
 
 		pipe(fd0); /* Create a pipe */
 			/* Make the pipe nonblocking at both ends */
-		fcntl(fd0[PIPE_WRITE], F_SETFL, 
+		fcntl(fd0[PIPE_WRITE], F_SETFL,
 				fcntl(fd0[PIPE_WRITE], F_GETFL) | O_NONBLOCK);
-		fcntl(fd0[PIPE_READ], F_SETFL, 
+		fcntl(fd0[PIPE_READ], F_SETFL,
 				fcntl(fd0[PIPE_READ], F_GETFL) | O_NONBLOCK);
 		p_m->send_fd = fd0[PIPE_WRITE];
 		p_h->recv_fd = fd0[PIPE_READ];
 
 		pipe(fd1); /* Create a pipe */
 			/* Make the pipe nonblocking at both ends */
-		fcntl(fd1[PIPE_WRITE], F_SETFL, 
+		fcntl(fd1[PIPE_WRITE], F_SETFL,
 				fcntl(fd1[PIPE_WRITE], F_GETFL) | O_NONBLOCK);
-		fcntl(fd1[PIPE_READ], F_SETFL, 
+		fcntl(fd1[PIPE_READ], F_SETFL,
 				fcntl(fd1[PIPE_READ], F_GETFL) | O_NONBLOCK);
 		p_h->send_fd = fd1[PIPE_WRITE];
 		p_m->recv_fd = fd1[PIPE_READ];
@@ -337,7 +339,7 @@ for (p=g_node_list; p!=NULL; p=p->next) {
 		p_h->next = *p_host;
 		*p_host = p_h;
 	}
-}	
+}
 
 }
 
@@ -388,21 +390,21 @@ for (i=0; i<g_net_link_num; i++) {
 
 		pipe(fd01);  /* Create a pipe */
 			/* Make the pipe nonblocking at both ends */
-   		fcntl(fd01[PIPE_WRITE], F_SETFL, 
+   		fcntl(fd01[PIPE_WRITE], F_SETFL,
 				fcntl(fd01[PIPE_WRITE], F_GETFL) | O_NONBLOCK);
-   		fcntl(fd01[PIPE_READ], F_SETFL, 
+   		fcntl(fd01[PIPE_READ], F_SETFL,
 				fcntl(fd01[PIPE_READ], F_GETFL) | O_NONBLOCK);
-		p0->pipe_send_fd = fd01[PIPE_WRITE]; 
-		p1->pipe_recv_fd = fd01[PIPE_READ]; 
+		p0->pipe_send_fd = fd01[PIPE_WRITE];
+		p1->pipe_recv_fd = fd01[PIPE_READ];
 
 		pipe(fd10);  /* Create a pipe */
 			/* Make the pipe nonblocking at both ends */
-   		fcntl(fd10[PIPE_WRITE], F_SETFL, 
+   		fcntl(fd10[PIPE_WRITE], F_SETFL,
 				fcntl(fd10[PIPE_WRITE], F_GETFL) | O_NONBLOCK);
-   		fcntl(fd10[PIPE_READ], F_SETFL, 
+   		fcntl(fd10[PIPE_READ], F_SETFL,
 				fcntl(fd10[PIPE_READ], F_GETFL) | O_NONBLOCK);
-		p1->pipe_send_fd = fd10[PIPE_WRITE]; 
-		p0->pipe_recv_fd = fd10[PIPE_READ]; 
+		p1->pipe_send_fd = fd10[PIPE_WRITE];
+		p0->pipe_recv_fd = fd10[PIPE_READ];
 
 		p0->next = p1; /* Insert ports in linked lisst */
 		p1->next = g_port_list;
@@ -415,7 +417,7 @@ for (i=0; i<g_net_link_num; i++) {
 
 /*
  * Loads network configuration file and creates data structures
- * for nodes and links. 
+ * for nodes and links.
  */
 int load_net_data_file()
 {
@@ -426,8 +428,8 @@ char fname[MAX_FILE_NAME];
 printf("Enter network data file: ");
 scanf("%s", fname);
 fp = fopen(fname, "r");
-if (fp == NULL) { 
-	printf("net.c: File did not open\n"); 
+if (fp == NULL) {
+	printf("net.c: File did not open\n");
 	return(0);
 }
 
@@ -436,7 +438,7 @@ int node_num;
 char node_type;
 int node_id;
 
-	/* 
+	/*
 	 * Read node information from the file and
 	 * fill in data structure for nodes.
 	 * The data structure is an array g_net_node[ ]
@@ -448,33 +450,41 @@ fscanf(fp, "%d", &node_num);
 printf("Number of Nodes = %d: \n", node_num);
 g_net_node_num = node_num;
 
-if (node_num < 1) { 
+if (node_num < 1) {
 	printf("net.c: No nodes\n");
 	fclose(fp);
 	return(0);
 }
-else { 
+else {
 	g_net_node =(struct net_node*) malloc(sizeof(struct net_node)*node_num);
-	for (i=0; i<node_num; i++) { 
+	for (i=0; i<node_num; i++) {
 		fscanf(fp, " %c ", &node_type);
 
-		if (node_type = 'H') {
+		if (node_type == 'H') {
 			fscanf(fp, " %d ", &node_id);
 			g_net_node[i].type = HOST;
 			g_net_node[i].id = node_id;
+			printf("\tnet.c: Added host %d\n",node_id);
+		}
+		else if (node_type == 'S') {
+
+			fscanf(fp, " %d ", &node_id);
+			g_net_node[i].type = SWITCH;
+			g_net_node[i].id = node_id;
+			printf("\tnet.c: Added switch %d\n",node_id);
 		}
 		else {
-			printf(" net.c: Unidentified Node Type\n");
+			printf("\tnet.c: Unidentified Node Type\n");
 		}
 
 		if (i != node_id) {
-			printf(" net.c: Incorrect node id\n");
+			printf("\tnet.c: Incorrect node id\n");
 			fclose(fp);
 			return(0);
 		}
 	}
 }
-	/* 
+	/*
 	 * Read link information from the file and
 	 * fill in data structure for links.
 	 * The data structure is an array g_net_link[ ]
@@ -491,7 +501,7 @@ fscanf(fp, " %d ", &link_num);
 printf("Number of links = %d\n", link_num);
 g_net_link_num = link_num;
 
-if (link_num < 1) { 
+if (link_num < 1) {
 	printf("net.c: No links\n");
 	fclose(fp);
 	return(0);
@@ -507,9 +517,9 @@ else {
 			g_net_link[i].pipe_node1 = node1;
 		}
 		else {
-			printf("   net.c: Unidentified link type\n");
+			printf("\tnet.c: Unidentified link type\n");
 		}
-	
+
 	}
 }
 
@@ -517,24 +527,24 @@ else {
 printf("Nodes:\n");
 for (i=0; i<g_net_node_num; i++) {
 	if (g_net_node[i].type == HOST) {
-	        printf("   Node %d HOST\n", g_net_node[i].id);
+	        printf("\tNode %d HOST\n", g_net_node[i].id);
 	}
 	else if (g_net_node[i].type == SWITCH) {
-		printf(" SWITCH\n");
+	        printf("\tNode %d SWITCH\n", g_net_node[i].id);
 	}
 	else {
-		printf(" Unknown Type\n");
+		printf("\tUnknown Type\n");
 	}
 }
 printf("Links:\n");
 for (i=0; i<g_net_link_num; i++) {
 	if (g_net_link[i].type == PIPE) {
-		printf("   Link (%d, %d) PIPE\n", 
-				g_net_link[i].pipe_node0, 
+		printf("\tLink (%d, %d) PIPE\n",
+				g_net_link[i].pipe_node0,
 				g_net_link[i].pipe_node1);
 	}
 	else if (g_net_link[i].type == SOCKET) {
-		printf("   Socket: to be constructed (net.c)\n");
+		printf("\tSocket: to be constructed (net.c)\n");
 	}
 }
 
