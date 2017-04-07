@@ -22,9 +22,9 @@ struct net_node { /* Network node, e.g., host or switch */
 
 struct net_port { /* port to communicate with another node */
 	enum NetLinkType type;
-	int pipe_host_id;
-	int pipe_send_fd;
-	int pipe_recv_fd;
+	int host_id;
+	int send_fd;
+	int recv_fd;
 	struct net_port *next;
 };
 

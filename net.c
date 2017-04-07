@@ -16,6 +16,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+
+#include <arpa/inet.h>
 
 #define _GNU_SOURCE
 #include <fcntl.h>
@@ -42,8 +46,8 @@ enum bool {FALSE, TRUE};
 
 struct net_link {
 	enum NetLinkType type;
-	int pipe_node0;
-	int pipe_node1;
+	int node0;
+	int node1;
 };
 
 
@@ -140,7 +144,7 @@ r = NULL;
 p = &g_port_list;
 
 while (*p != NULL) {
-	if ((*p)->pipe_host_id == host_id) {
+	if ((*p)->host_id == host_id) {
 		t = *p;
 		*p = (*p)->next;
 		t->next = r;
@@ -377,16 +381,16 @@ g_port_list = NULL;
 for (i=0; i<g_net_link_num; i++) {
 	if (g_net_link[i].type == PIPE) {
 
-		node0 = g_net_link[i].pipe_node0;
-		node1 = g_net_link[i].pipe_node1;
+		node0 = g_net_link[i].node0;
+		node1 = g_net_link[i].node1;
 
 		p0 = (struct net_port *) malloc(sizeof(struct net_port));
 		p0->type = g_net_link[i].type;
-		p0->pipe_host_id = node0;
+		p0->host_id = node0;
 
 		p1 = (struct net_port *) malloc(sizeof(struct net_port));
 		p1->type = g_net_link[i].type;
-		p1->pipe_host_id = node1;
+		p1->host_id = node1;
 
 		pipe(fd01);  /* Create a pipe */
 			/* Make the pipe nonblocking at both ends */
@@ -394,8 +398,8 @@ for (i=0; i<g_net_link_num; i++) {
 				fcntl(fd01[PIPE_WRITE], F_GETFL) | O_NONBLOCK);
    		fcntl(fd01[PIPE_READ], F_SETFL,
 				fcntl(fd01[PIPE_READ], F_GETFL) | O_NONBLOCK);
-		p0->pipe_send_fd = fd01[PIPE_WRITE];
-		p1->pipe_recv_fd = fd01[PIPE_READ];
+		p0->send_fd = fd01[PIPE_WRITE];
+		p1->recv_fd = fd01[PIPE_READ];
 
 		pipe(fd10);  /* Create a pipe */
 			/* Make the pipe nonblocking at both ends */
@@ -403,8 +407,8 @@ for (i=0; i<g_net_link_num; i++) {
 				fcntl(fd10[PIPE_WRITE], F_GETFL) | O_NONBLOCK);
    		fcntl(fd10[PIPE_READ], F_SETFL,
 				fcntl(fd10[PIPE_READ], F_GETFL) | O_NONBLOCK);
-		p1->pipe_send_fd = fd10[PIPE_WRITE];
-		p0->pipe_recv_fd = fd10[PIPE_READ];
+		p1->send_fd = fd10[PIPE_WRITE];
+		p0->recv_fd = fd10[PIPE_READ];
 
 		p0->next = p1; /* Insert ports in linked lisst */
 		p1->next = g_port_list;
@@ -513,8 +517,8 @@ else {
 		if (link_type == 'P') {
 			fscanf(fp," %d %d ", &node0, &node1);
 			g_net_link[i].type = PIPE;
-			g_net_link[i].pipe_node0 = node0;
-			g_net_link[i].pipe_node1 = node1;
+			g_net_link[i].node0 = node0;
+			g_net_link[i].node1 = node1;
 		}
 		else {
 			printf("\tnet.c: Unidentified link type\n");
@@ -540,8 +544,8 @@ printf("Links:\n");
 for (i=0; i<g_net_link_num; i++) {
 	if (g_net_link[i].type == PIPE) {
 		printf("\tLink (%d, %d) PIPE\n",
-				g_net_link[i].pipe_node0,
-				g_net_link[i].pipe_node1);
+				g_net_link[i].node0,
+				g_net_link[i].node1);
 	}
 	else if (g_net_link[i].type == SOCKET) {
 		printf("\tSocket: to be constructed (net.c)\n");
