@@ -40,16 +40,7 @@ char cmd;
 
 while(1) {
 	/* Display command options */
-   	printf("\nCommands (Current host ID = %d):\n",curr_host );
- 	printf("   (s) Display host's state\n");
-	printf("   (m) Set host's main directory\n");
-	printf("   (h) Display all hosts\n");
-	printf("   (c) Change host\n");
-	printf("   (p) Ping a host\n");
-	printf("   (u) Upload a file to a host\n");
-	printf("   (d) Download a file from a host\n");
-	printf("   (q) Quit\n");
-	printf("   Enter Command: ");
+   	printf("\nhost%d > \n",curr_host );
 	do {
 		cmd = getchar();
 	} while(cmd == ' ' || cmd == '\n'); /* get rid of junk from stdin */
@@ -64,7 +55,8 @@ while(1) {
 		case 'p':
 		case 'u':
 		case 'd':
-		case 'q': return cmd;
+		case 'q':
+		case 'z': return cmd;
 		default:
 			printf("Invalid: you entered %c\n\n", cmd);
 	}
@@ -261,6 +253,18 @@ while(1) {
 			break;
 		case 'd': /* Download a file from a host */
 			printf("This command is not implemented\n");
+			break;
+		case 'z':
+			printf("Commands:\n");
+		 	printf("   (s) Display host's state\n");
+			printf("   (m) Set host's main directory\n");
+			printf("   (h) Display all hosts\n");
+			printf("   (c) Change host\n");
+			printf("   (p) Ping a host\n");
+			printf("   (u) Upload a file to a host\n");
+			printf("   (d) Download a file from a host\n");
+			printf("   (z) Commands\n");
+			printf("   (q) Quit\n");
 			break;
 		case 'q':  /* Quit */
 			return;
